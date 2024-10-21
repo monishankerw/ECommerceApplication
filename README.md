@@ -2467,13 +2467,8 @@ public class MyController { }
 ```
 ```
 
-This `.md` file provides a complete overview of commonly used Spring Boot and Spring MVC annotations with descriptions and usage examples.
-
-
-Here are additional Spring Boot and Spring MVC annotations, formatted in `.md`:
-
 ---
-
+```
 # Spring Boot & Spring MVC Annotations
 
 ### Spring MVC Annotations
