@@ -1,5 +1,5 @@
 ### Complete Notes on **Spring Security**
-
+ 
 ---
 
 Spring Security is a powerful and highly customizable authentication and access-control framework. It is the de-facto standard for securing Spring-based applications. Here’s a comprehensive guide covering various concepts, annotations, and practical steps to use Spring Security effectively.
