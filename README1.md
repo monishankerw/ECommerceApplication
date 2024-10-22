@@ -4517,6 +4517,379 @@ This code allows you to upload multiple files in a single request.
 
 That's it! You've implemented file upload functionality in Spring Boot. You can now handle both single and multiple file uploads.
 
+Q. How do you schedule tasks in spring boot
+
+In Spring Boot, you can schedule tasks to run at fixed intervals or based on a cron expression using Spring’s `@Scheduled` annotation. To enable scheduling, you need to follow a few simple steps:
+
+### Step 1: Enable Scheduling
+In your main Spring Boot application class, enable scheduling by using the `@EnableScheduling` annotation:
+
+```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+public class MyApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+}
+```
+
+### Step 2: Create a Scheduled Task
+Create a class where you define the tasks that you want to schedule. You can annotate any method with `@Scheduled` to schedule it for automatic execution.
+
+Here are three examples: scheduling with a fixed rate, fixed delay, and cron expression.
+
+#### Example 1: Fixed Rate Scheduling
+This method runs at a fixed interval, meaning the next execution starts after the previous execution begins.
+
+```java
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class TaskScheduler {
+
+    @Scheduled(fixedRate = 5000)  // Executes every 5 seconds
+    public void scheduleFixedRateTask() {
+        System.out.println("Fixed rate task - " + System.currentTimeMillis() / 1000);
+    }
+}
+```
+
+#### Example 2: Fixed Delay Scheduling
+This method runs at a fixed delay, meaning the next execution starts after the previous execution completes.
+
+```java
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class TaskScheduler {
+
+    @Scheduled(fixedDelay = 5000)  // Executes 5 seconds after the last completion
+    public void scheduleFixedDelayTask() {
+        System.out.println("Fixed delay task - " + System.currentTimeMillis() / 1000);
+    }
+}
+```
+
+#### Example 3: Cron Expression Scheduling
+You can schedule tasks using a cron expression for more complex timing scenarios. The cron expression follows this pattern:
+
+```
+second minute hour day-of-month month day-of-week
+```
+
+For example, to run a task every day at 10:00 AM:
+
+```java
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class TaskScheduler {
+
+    @Scheduled(cron = "0 0 10 * * ?")  // Every day at 10:00 AM
+    public void scheduleCronTask() {
+        System.out.println("Cron task executed at 10:00 AM");
+    }
+}
+```
+
+### Step 3: Configuration (Optional)
+If you want to customize the thread pool or set other scheduling properties, you can do so in your `application.properties` or `application.yml` file.
+
+#### Example:
+```properties
+spring.task.scheduling.pool.size=10  // Set the thread pool size for the scheduler
+spring.task.scheduling.shutdown.await-termination=true
+spring.task.scheduling.shutdown.await-termination-period=30s
+```
+
+### Step 4: Handling Exceptions
+You can also handle exceptions that might occur during task execution by wrapping the scheduled logic in a `try-catch` block or by using an `@Async` method to run the task in the background:
+
+```java
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class TaskScheduler {
+
+    @Scheduled(fixedRate = 5000)
+    public void scheduleTaskWithExceptionHandling() {
+        try {
+            // Your task logic
+            System.out.println("Executing task...");
+            // Simulate an exception
+            if (true) {
+                throw new RuntimeException("Simulated error");
+            }
+        } catch (Exception e) {
+            System.err.println("Error occurred: " + e.getMessage());
+        }
+    }
+}
+```
+
+### Step 5: Example Use Case – Database Cleanup Task
+Here’s an example of a scheduled task that cleans up expired records from a database every day at midnight:
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CleanupScheduler {
+
+    @Autowired
+    private YourRepository repository;
+
+    @Scheduled(cron = "0 0 0 * * ?")  // Every day at midnight
+    public void cleanUpOldRecords() {
+        System.out.println("Running daily cleanup task...");
+        repository.deleteExpiredRecords();  // Example method to delete old data
+    }
+}
+```
+
+### Step 6: Optional – Asynchronous Tasks
+If you want your scheduled tasks to run asynchronously, you can combine scheduling with the `@Async` annotation. First, enable async execution by adding `@EnableAsync` to your main class:
+
+```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+@EnableAsync
+public class MyApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+}
+```
+
+Then, annotate your scheduled method with `@Async`:
+
+```java
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class AsyncTaskScheduler {
+
+    @Async
+    @Scheduled(fixedRate = 5000)
+    public void scheduleAsyncTask() {
+        System.out.println("Asynchronous task - " + System.currentTimeMillis() / 1000);
+    }
+}
+```
+
+---
+
+This is how you can schedule tasks in Spring Boot using fixed intervals, fixed delays, or cron expressions. You can also handle exceptions and execute tasks asynchronously depending on your needs.
+
+Q. How do you implement caching in spring boot?
+
+In Spring Boot, caching can be implemented using Spring’s caching abstraction. It provides a simple and flexible way to enable caching in your application to improve performance by storing frequently accessed data in memory, reducing database hits or expensive operations.
+
+### Step-by-Step Guide to Implement Caching in Spring Boot
+
+### Step 1: Add Dependencies
+If you're using Spring Boot, the caching dependencies are included with `spring-boot-starter-cache`. If you're using a specific caching provider like **Ehcache**, **Caffeine**, or **Redis**, add the appropriate dependency.
+
+For basic caching support, add this dependency in your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+```
+
+### Step 2: Enable Caching
+Enable caching by adding the `@EnableCaching` annotation in your main application class:
+
+```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
+
+@SpringBootApplication
+@EnableCaching
+public class MyApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+}
+```
+
+### Step 3: Use Caching in Your Application
+
+To enable caching for specific methods, you can use the `@Cacheable`, `@CachePut`, and `@CacheEvict` annotations.
+
+- `@Cacheable`: Caches the result of the method execution.
+- `@CachePut`: Updates the cache without skipping the method execution.
+- `@CacheEvict`: Removes data from the cache.
+
+#### Example: Using `@Cacheable`
+Here is an example of caching the result of a method that fetches data from a database:
+
+```java
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ProductService {
+
+    @Cacheable("products")
+    public Product getProductById(Long productId) {
+        System.out.println("Fetching product from database...");
+        // Simulate database access
+        return findProductById(productId);
+    }
+
+    private Product findProductById(Long productId) {
+        // Simulate database operation
+        return new Product(productId, "Product " + productId);
+    }
+}
+```
+
+Here, the `getProductById()` method is annotated with `@Cacheable("products")`. The result of this method will be cached, and subsequent calls with the same `productId` will return the cached result instead of querying the database again.
+
+#### Example: Using `@CacheEvict`
+If you want to remove an entry from the cache (e.g., when a product is deleted), you can use `@CacheEvict`:
+
+```java
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ProductService {
+
+    @CacheEvict(value = "products", key = "#productId")
+    public void deleteProductById(Long productId) {
+        System.out.println("Deleting product...");
+        // Simulate delete operation
+    }
+}
+```
+
+This will remove the cached product when it is deleted, ensuring the cache stays up to date.
+
+#### Example: Using `@CachePut`
+You can use `@CachePut` when you want to update the cache without skipping the method execution. For example, when you update a product:
+
+```java
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ProductService {
+
+    @CachePut(value = "products", key = "#product.id")
+    public Product updateProduct(Product product) {
+        System.out.println("Updating product...");
+        // Simulate update operation
+        return product;
+    }
+}
+```
+
+This ensures that the updated product is stored in the cache.
+
+### Step 4: Cache Configuration (Optional)
+
+Spring Boot provides a default caching provider if you don’t specify one, but you can configure a specific caching provider like **Ehcache**, **Redis**, or **Caffeine**.
+
+#### Example: Using **ConcurrentHashMap** as Cache Provider (Default)
+The default cache provider used by Spring Boot is **ConcurrentHashMap**, but you can specify other providers by adding configurations in `application.properties`.
+
+#### Example: Using **Ehcache**
+To use **Ehcache** as a caching provider, add the following dependency in your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.ehcache</groupId>
+    <artifactId>ehcache</artifactId>
+</dependency>
+```
+
+Next, create an Ehcache configuration file (`ehcache.xml`):
+
+```xml
+<config xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns='http://www.ehcache.org/v3'
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core.xsd">
+    <cache alias="products">
+        <expiry>
+            <ttl unit="seconds">600</ttl> <!-- Time-to-live for cache entries -->
+        </expiry>
+        <resources>
+            <heap>100</heap> <!-- Cache size -->
+        </resources>
+    </cache>
+</config>
+```
+
+In `application.properties`, link the Ehcache configuration:
+
+```properties
+spring.cache.ehcache.config=classpath:ehcache.xml
+```
+
+### Step 5: Testing Caching
+You can test the caching by calling your `ProductService` multiple times:
+
+```java
+@Autowired
+private ProductService productService;
+
+public void testCache() {
+    // First call - method will execute and cache the result
+    System.out.println(productService.getProductById(1L));
+
+    // Second call - result will be fetched from the cache
+    System.out.println(productService.getProductById(1L));
+}
+```
+
+In the first call, the method executes and the result is cached. In subsequent calls with the same `productId`, the cached result is returned without executing the method again.
+
+### Step 6: Optional – Cache Statistics (For Monitoring)
+You can monitor cache hits, misses, and other statistics by using the cache provider’s specific APIs or by configuring cache management beans in your application.
+
+For example, if you’re using Ehcache, you can enable cache statistics in your configuration.
+
+---
+
+### Summary of Annotations:
+- `@Cacheable`: Stores the result of the method in the cache.
+- `@CachePut`: Updates the cache with the new result of the method.
+- `@CacheEvict`: Removes an entry from the cache.
+- `@EnableCaching`: Enables caching in the Spring Boot application.
+
+This is how you can implement caching in Spring Boot to improve performance by reducing database calls or expensive operations.
+
+
+
 
 
  
