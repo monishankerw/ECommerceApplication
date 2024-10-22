@@ -2635,3 +2635,981 @@ java -jar target/my-spring-boot-app-0.0.1-SNAPSHOT.jar --server.port=8081
 Running a Spring Boot application as a standalone JAR is a simple and effective way to deploy your applications. By following these steps, you can easily package your application and run it in any environment with a compatible Java runtime. This feature makes Spring Boot applications highly portable and easy to distribute.
 
 
+Q. What is the purpose of @ConfigurationProperties
+
+The `@ConfigurationProperties` annotation in Spring Boot is used to bind external configurations (typically defined in properties files, YAML files, or environment variables) to strongly typed Java objects. It allows you to map configuration values to Java bean properties, providing a clean and structured way to manage application settings.
+
+### Purpose and Use of `@ConfigurationProperties`
+
+- **Centralized Configuration**: It allows you to centralize your configuration in a properties or YAML file and map those settings directly to POJO (Plain Old Java Object) classes.
+- **Type-Safe Configuration**: You can bind your application configuration properties in a type-safe manner, making it easier to validate, read, and manage configurations.
+- **Complex Configuration**: It helps you work with nested configuration properties in an organized way, especially when the configuration has hierarchical structures.
+
+### How to Use `@ConfigurationProperties`
+
+Here is an example to illustrate its usage.
+
+### Step 1: Define Configuration in `application.properties` or `application.yml`
+
+#### In `application.properties`
+
+```properties
+app.name=MyApp
+app.description=A Spring Boot Application
+app.settings.min=5
+app.settings.max=100
+```
+
+#### In `application.yml`
+
+```yaml
+app:
+  name: MyApp
+  description: A Spring Boot Application
+  settings:
+    min: 5
+    max: 100
+```
+
+### Step 2: Create a Java Class to Hold the Configuration
+
+You can create a POJO class to map the properties defined in the configuration file.
+
+#### Example: `AppProperties.java`
+
+```java
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Component
+@ConfigurationProperties(prefix = "app")
+public class AppProperties {
+
+    private String name;
+    private String description;
+    private Settings settings = new Settings();
+
+    // Nested class to hold the 'settings' properties
+    public static class Settings {
+        private int min;
+        private int max;
+
+        public int getMin() {
+            return min;
+        }
+
+        public void setMin(int min) {
+            this.min = min;
+        }
+
+        public int getMax() {
+            return max;
+        }
+
+        public void setMax(int max) {
+            this.max = max;
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Settings getSettings() {
+        return settings;
+    }
+
+    public void setSettings(Settings settings) {
+        this.settings = settings;
+    }
+}
+```
+
+### Step 3: Enable Configuration Properties
+
+To enable support for `@ConfigurationProperties` in Spring Boot, you don’t need any additional setup if you're using `@SpringBootApplication`. The `@EnableConfigurationProperties` annotation is automatically included.
+
+However, if you want to enable it manually, you can annotate your main application class with `@EnableConfigurationProperties`.
+
+```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+
+@SpringBootApplication
+@EnableConfigurationProperties(AppProperties.class)
+public class MySpringBootApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MySpringBootApplication.class, args);
+    }
+}
+```
+
+### Step 4: Access the Configuration Values
+
+Now, you can inject the `AppProperties` bean anywhere in your Spring-managed beans.
+
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class AppController {
+
+    private final AppProperties appProperties;
+
+    public AppController(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
+
+    @GetMapping("/app-info")
+    public String getAppInfo() {
+        return "App Name: " + appProperties.getName() +
+               ", Description: " + appProperties.getDescription() +
+               ", Min Setting: " + appProperties.getSettings().getMin() +
+               ", Max Setting: " + appProperties.getSettings().getMax();
+    }
+}
+```
+
+### Step 5: Validate Properties (Optional)
+
+You can also add validation annotations (like `@NotNull`, `@Min`, etc.) to validate the properties.
+
+```java
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Max;
+
+@ConfigurationProperties(prefix = "app")
+public class AppProperties {
+
+    @NotNull
+    private String name;
+
+    private String description;
+
+    private Settings settings = new Settings();
+
+    public static class Settings {
+        @Min(1)
+        @Max(100)
+        private int min;
+        private int max;
+        
+        // Getters and setters...
+    }
+
+    // Getters and setters...
+}
+```
+
+To enable validation, annotate the class with `@Validated`:
+
+```java
+@ConfigurationProperties(prefix = "app")
+@Validated
+public class AppProperties {
+    // Your fields and validation annotations
+}
+```
+
+### Benefits of Using `@ConfigurationProperties`
+
+1. **Type Safety**: Provides a type-safe way to bind external configuration to Java objects.
+2. **Modular and Reusable**: Organizes configuration into manageable and reusable components.
+3. **Complex Configuration Handling**: Easily handles hierarchical or nested configurations.
+4. **Validation Support**: Supports property validation using JSR-303 annotations.
+5. **Better Structure**: Helps maintain a clean separation between code and configuration.
+
+### Conclusion
+
+The `@ConfigurationProperties` annotation allows Spring Boot applications to manage externalized configuration in a more structured and maintainable way. It’s especially useful for complex configurations and type-safe bindings with nested structures, making your configuration handling more readable and easier to validate.
+
+Q. How do you configure Thymeleaf in spring boot
+
+Thymeleaf is a modern server-side Java template engine used in Spring Boot applications to render dynamic web content. It allows you to bind data from your backend (Spring) to HTML templates. By default, Spring Boot includes Thymeleaf support, so setting it up is very straightforward. Here's how to configure Thymeleaf in a Spring Boot application:
+
+### 1. Add Thymeleaf Dependency
+
+To use Thymeleaf in a Spring Boot project, you need to include the `spring-boot-starter-thymeleaf` dependency.
+
+#### Using Maven
+
+In your `pom.xml` file, add the following dependency:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+```
+
+#### Using Gradle
+
+In your `build.gradle` file, add:
+
+```groovy
+implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+```
+
+### 2. Create Thymeleaf Templates
+
+By default, Spring Boot looks for Thymeleaf templates in the `src/main/resources/templates` directory.
+
+#### Example: `index.html` in `src/main/resources/templates`
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Welcome</title>
+</head>
+<body>
+    <h1>Welcome to Thymeleaf!</h1>
+    <p th:text="'Hello, ' + ${name} + '!'"></p>
+</body>
+</html>
+```
+
+In this example, the `th:text` attribute is used to render the `name` variable passed from the controller.
+
+### 3. Create a Controller
+
+You need to create a Spring Boot controller to return the Thymeleaf template.
+
+#### Example: `HomeController.java`
+
+```java
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class HomeController {
+
+    @GetMapping("/")
+    public String home(Model model) {
+        model.addAttribute("name", "Moni Shanker");
+        return "index";  // returns the Thymeleaf template "index.html"
+    }
+}
+```
+
+- **`@Controller`** is used to indicate that this class is a web controller.
+- **`Model`** is used to pass attributes from the controller to the view (Thymeleaf template).
+- **`return "index"`** tells Spring Boot to look for `index.html` in the `templates` directory.
+
+### 4. Default Thymeleaf Configuration
+
+Spring Boot provides default configuration for Thymeleaf. Here's how Spring Boot configures it by default:
+
+- Template files are located in the `src/main/resources/templates` directory.
+- Thymeleaf templates have the `.html` extension.
+- Thymeleaf resolves templates with a prefix (`classpath:/templates/`) and a suffix (`.html`).
+
+#### Default Thymeleaf Settings in `application.properties`
+
+If you want to customize the default settings, you can add configurations in your `application.properties` or `application.yml` file.
+
+Example configuration in `application.properties`:
+
+```properties
+spring.thymeleaf.prefix=classpath:/templates/  # Path to the templates
+spring.thymeleaf.suffix=.html                  # File extension
+spring.thymeleaf.mode=HTML5                    # Template mode
+spring.thymeleaf.encoding=UTF-8                # Encoding
+spring.thymeleaf.cache=false                   # Disable template cache for development
+```
+
+### 5. Customizing Thymeleaf Settings
+
+You can customize how Thymeleaf behaves using the `application.properties` file.
+
+- **Disable Cache**: During development, it can be useful to disable caching so that changes in templates are reflected immediately.
+
+  ```properties
+  spring.thymeleaf.cache=false
+  ```
+
+- **Set Template Encoding**: The default encoding is UTF-8, but you can change it as needed.
+
+  ```properties
+  spring.thymeleaf.encoding=UTF-8
+  ```
+
+- **Change Template Mode**: You can set the Thymeleaf template mode (e.g., `HTML5`, `XML`, etc.).
+
+  ```properties
+  spring.thymeleaf.mode=HTML5
+  ```
+
+### 6. Using Thymeleaf Fragments
+
+Thymeleaf allows you to reuse parts of templates by using fragments. You can create reusable pieces of HTML code and include them in multiple templates.
+
+#### Example: Creating a Fragment
+
+Create a fragment file `header.html`:
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:fragment="title">Default Title</title>
+</head>
+```
+
+Now include the fragment in your main template `index.html`:
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="fragments/header :: title"></th:block>
+</head>
+<body>
+    <h1>Welcome to Thymeleaf with Fragments!</h1>
+</body>
+</html>
+```
+
+This approach helps you modularize your templates.
+
+### 7. Internationalization (i18n)
+
+Thymeleaf also supports internationalization. You can create different properties files for different languages, and Thymeleaf will automatically pick the right one based on the user's locale.
+
+#### Example:
+
+`messages.properties` (default language):
+
+```properties
+greeting=Hello
+```
+
+`messages_fr.properties` (for French):
+
+```properties
+greeting=Bonjour
+```
+
+In your Thymeleaf template, you can use the message key like this:
+
+```html
+<p th:text="#{greeting}"></p>
+```
+
+Based on the locale, it will either display "Hello" or "Bonjour."
+
+### Conclusion
+
+Configuring Thymeleaf in a Spring Boot application is simple thanks to Spring Boot’s auto-configuration feature. By just including the necessary dependencies and setting up a controller, you can use Thymeleaf to create dynamic and interactive web pages. You can further customize Thymeleaf’s behavior using properties, fragments, and internationalization to meet your needs.
+
+Q. How do you connect to an external RestApi using spring boot
+
+Connecting to an external REST API in Spring Boot can be done using various HTTP clients, but one of the most commonly used tools in Spring is **RestTemplate** or the newer **WebClient** (introduced in Spring 5). Here, I’ll explain how to use both to connect to an external REST API.
+
+### 1. Using `RestTemplate`
+
+#### Step 1: Add Dependencies
+
+In Spring Boot 2.x, the `RestTemplate` class is included by default, so no additional dependencies are required if you're using Spring Boot 2.x. However, in Spring Boot 3.x, `RestTemplate` is deprecated in favor of `WebClient`, but you can still use `RestTemplate` if needed.
+
+If you’re on Spring Boot 3.x and still want to use `RestTemplate`, add the following dependency:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+#### Step 2: Create a Bean for `RestTemplate`
+
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+```
+
+#### Step 3: Use `RestTemplate` to Call External REST APIs
+
+You can use the `RestTemplate` to make HTTP requests such as GET, POST, PUT, DELETE, etc., to an external API.
+
+##### Example: GET Request
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+public class ApiService {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    public String getExternalApiData() {
+        String url = "https://api.example.com/data";
+        return restTemplate.getForObject(url, String.class);
+    }
+}
+```
+
+In this example, `getForObject()` method performs a GET request to the given URL and returns the response as a `String`.
+
+##### Example: POST Request
+
+```java
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
+@Service
+public class ApiService {
+
+    private final RestTemplate restTemplate;
+
+    public ApiService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public String postExternalApiData(Object requestPayload) {
+        String url = "https://api.example.com/data";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Object> request = new HttpEntity<>(requestPayload, headers);
+        
+        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+
+        return response.getBody();
+    }
+}
+```
+
+In this example, the `postForEntity()` method sends a POST request with the provided payload and headers, and returns the response from the external API.
+
+#### Other Common Methods in `RestTemplate`
+
+- **`getForObject(url, class)`**: Retrieves an entity from the external API via GET request.
+- **`postForEntity(url, request, class)`**: Sends a POST request to the external API.
+- **`put(url, request)`**: Sends a PUT request to the external API.
+- **`delete(url)`**: Sends a DELETE request to the external API.
+
+### 2. Using `WebClient` (Preferred for Reactive Programming and Spring 5+)
+
+`WebClient` is a non-blocking, reactive HTTP client that is part of the Spring WebFlux module. It provides a more flexible and modern alternative to `RestTemplate` for interacting with external REST APIs.
+
+#### Step 1: Add Dependencies
+
+`WebClient` is included in the `spring-boot-starter-webflux` dependency. Add it to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webflux</artifactId>
+</dependency>
+```
+
+#### Step 2: Create a Bean for `WebClient`
+
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
+
+@Configuration
+public class WebClientConfig {
+
+    @Bean
+    public WebClient.Builder webClientBuilder() {
+        return WebClient.builder();
+    }
+}
+```
+
+#### Step 3: Use `WebClient` to Call External REST APIs
+
+You can use `WebClient` to make asynchronous, non-blocking HTTP requests.
+
+##### Example: GET Request
+
+```java
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+@Service
+public class ApiService {
+
+    private final WebClient.Builder webClientBuilder;
+
+    public ApiService(WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
+    }
+
+    public Mono<String> getExternalApiData() {
+        return webClientBuilder.build()
+            .get()
+            .uri("https://api.example.com/data")
+            .retrieve()
+            .bodyToMono(String.class);
+    }
+}
+```
+
+In this example, the `get()` method performs a GET request, and `retrieve()` fetches the response. `bodyToMono(String.class)` converts the response body to a `Mono<String>`.
+
+##### Example: POST Request
+
+```java
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+@Service
+public class ApiService {
+
+    private final WebClient.Builder webClientBuilder;
+
+    public ApiService(WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
+    }
+
+    public Mono<String> postExternalApiData(Object requestPayload) {
+        return webClientBuilder.build()
+            .post()
+            .uri("https://api.example.com/data")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(Mono.just(requestPayload), Object.class)
+            .retrieve()
+            .bodyToMono(String.class);
+    }
+}
+```
+
+In this example, the `post()` method sends a POST request to the external API. The payload is passed using `body()` and the response is converted into a `Mono<String>`.
+
+#### Other Common Methods in `WebClient`
+
+- **`get()`**: Sends a GET request.
+- **`post()`**: Sends a POST request.
+- **`put()`**: Sends a PUT request.
+- **`delete()`**: Sends a DELETE request.
+- **`retrieve()`**: Retrieves the response body.
+- **`bodyToMono(class)`**: Converts the response to a Mono (asynchronous single result).
+
+### 3. Handling Errors with `WebClient`
+
+`WebClient` allows you to handle errors in a more flexible way than `RestTemplate`.
+
+```java
+public Mono<String> getExternalApiData() {
+    return webClientBuilder.build()
+        .get()
+        .uri("https://api.example.com/data")
+        .retrieve()
+        .onStatus(HttpStatus::is4xxClientError, response -> Mono.error(new RuntimeException("Client error")))
+        .onStatus(HttpStatus::is5xxServerError, response -> Mono.error(new RuntimeException("Server error")))
+        .bodyToMono(String.class);
+}
+```
+
+This code snippet checks for client and server errors and handles them accordingly.
+
+### 4. Conclusion
+
+- **For Synchronous Calls (Blocking)**: Use `RestTemplate`, though it's deprecated in Spring Boot 3.x, it's simple to use for straightforward use cases.
+- **For Asynchronous Calls (Non-blocking)**: Use `WebClient` for a more modern and flexible approach, especially if you're working with reactive programming.
+
+Both `RestTemplate` and `WebClient` can be easily configured to interact with external REST APIs, but `WebClient` is recommended for new projects as it’s non-blocking and more feature-rich.
+
+Q. How do you implement pagination in spring boot
+
+Pagination in Spring Boot can be implemented easily with Spring Data JPA, which provides built-in support for pagination through the `Pageable` interface and `Page` object. This is particularly useful when fetching large datasets in chunks rather than loading everything at once.
+
+### Steps to Implement Pagination in Spring Boot
+
+#### 1. Add Required Dependencies
+
+Make sure you have the following dependencies in your `pom.xml` file for Spring Boot and Spring Data JPA:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+#### 2. Create an Entity Class
+
+Create a simple entity that represents the data you want to paginate. For example, let's say we have a `Product` entity.
+
+```java
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private double price;
+
+    // Constructors, Getters, and Setters
+}
+```
+
+#### 3. Create a Repository Interface
+
+You need to create a repository that extends `JpaRepository` or `PagingAndSortingRepository`. Both support pagination.
+
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+}
+```
+
+#### 4. Use `Pageable` in the Service or Controller
+
+Now you can use the `Pageable` interface to request a specific page with a certain size, and use `Page` to handle the response.
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ProductService {
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    public Page<Product> getPaginatedProducts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository.findAll(pageable);
+    }
+}
+```
+
+#### 5. Implement the Pagination in the Controller
+
+In the controller, you can use the `Pageable` object to handle pagination via query parameters like `?page=0&size=10`.
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ProductController {
+
+    @Autowired
+    private ProductService productService;
+
+    @GetMapping("/products")
+    public Page<Product> getProducts(@RequestParam(defaultValue = "0") int page, 
+                                     @RequestParam(defaultValue = "10") int size) {
+        return productService.getPaginatedProducts(page, size);
+    }
+}
+```
+
+### Explanation
+
+1. **Pageable Object**: The `Pageable` interface is used to request a specific page and page size. It is passed to the repository, which handles the pagination logic.
+
+    - `PageRequest.of(page, size)` creates a pageable object. Here, `page` is the current page number (starting from 0), and `size` is the number of records to fetch per page.
+
+2. **Page Object**: The `Page<T>` is a wrapper that contains the paginated data and other details such as the total number of pages, total elements, and more.
+
+### Custom Pagination with Sorting
+
+You can also add sorting while paginating using `PageRequest.of(int page, int size, Sort sort)`:
+
+```java
+import org.springframework.data.domain.Sort;
+
+public Page<Product> getPaginatedAndSortedProducts(int page, int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("price").ascending());
+    return productRepository.findAll(pageable);
+}
+```
+
+In this case, products are sorted by price in ascending order.
+
+### Custom Pagination in SQL Queries
+
+If you're using custom JPQL or native queries, pagination can still be applied. Use `@Query` with `Pageable` as a method parameter:
+
+```java
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    @Query("SELECT p FROM Product p WHERE p.price > :minPrice")
+    Page<Product> findProductsByMinPrice(double minPrice, Pageable pageable);
+}
+```
+
+Then, in your service:
+
+```java
+public Page<Product> getProductsByMinPrice(double minPrice, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    return productRepository.findProductsByMinPrice(minPrice, pageable);
+}
+```
+
+### Testing the API
+
+If your Spring Boot application is running on port `8080`, you can test the pagination by hitting the following endpoint:
+
+```
+GET http://localhost:8080/products?page=0&size=5
+```
+
+This will return the first page of products with 5 items per page.
+
+### Conclusion
+
+- Use **`Pageable`** to handle pagination.
+- Use **`Page<T>`** to handle the paginated result.
+- You can also add sorting and filtering to your pagination logic.
+- Pagination helps in efficiently handling large datasets by loading data in chunks.
+
+Q. How do you handle validation in spring boot
+In Spring Boot, validation is commonly handled using the Java Bean Validation API (JSR 380) and Hibernate Validator, which is the default implementation. You can use annotations to define validation constraints on the fields of a Java object (typically a DTO or entity) and Spring will automatically enforce these constraints when processing input data.
+
+### Steps to Handle Validation in Spring Boot
+
+#### 1. Add Dependencies
+
+Spring Boot provides validation support out of the box, but you need to ensure that the necessary dependencies are included in your `pom.xml` (if you're using Maven):
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+```
+
+This dependency brings in the necessary Hibernate Validator library to support validation.
+
+#### 2. Define Validation Constraints in Your DTO/Entity
+
+Use annotations from `javax.validation.constraints` to specify the validation rules on the fields of your model class or DTO.
+
+Example of a `User` DTO with validation:
+
+```java
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+public class UserDTO {
+
+    @NotNull(message = "User ID cannot be null")
+    private Long id;
+
+    @NotBlank(message = "Name cannot be blank")
+    @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
+    private String name;
+
+    @NotBlank(message = "Email cannot be blank")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @NotNull(message = "Age cannot be null")
+    private Integer age;
+
+    // Getters and Setters
+}
+```
+
+In this example:
+- `@NotNull` ensures that a field cannot be null.
+- `@NotBlank` ensures that the field is not null and not empty after trimming whitespace.
+- `@Size` sets constraints on the length of the string.
+- `@Email` checks that the field contains a valid email format.
+
+#### 3. Enable Validation in the Controller
+
+You can use the `@Valid` annotation in the controller to trigger validation. When an invalid request is received, Spring will throw a `MethodArgumentNotValidException`, which you can handle globally.
+
+Example of a `UserController`:
+
+```java
+import org.springframework.web.bind.annotation.*;
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @PostMapping
+    public String createUser(@Valid @RequestBody UserDTO userDTO) {
+        // Proceed with the creation of the user
+        return "User is valid and has been created successfully!";
+    }
+}
+```
+
+Here, `@Valid` ensures that the `UserDTO` object is validated before proceeding with the method execution.
+
+#### 4. Handling Validation Errors
+
+By default, Spring Boot returns a `400 Bad Request` response with a message if validation fails. You can customize how validation errors are handled by using `@ControllerAdvice` to handle exceptions globally.
+
+Here’s how you can handle validation exceptions globally:
+
+```java
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> 
+            errors.put(error.getField(), error.getDefaultMessage())
+        );
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+}
+```
+
+This will capture validation errors and return a more user-friendly response in the form of a JSON object containing field names and their corresponding error messages.
+
+For example, the response would look like this:
+
+```json
+{
+  "name": "Name must be between 3 and 50 characters",
+  "email": "Invalid email format"
+}
+```
+
+#### 5. Custom Validation
+
+You can also create custom validators if the built-in constraints don’t meet your needs. Here’s an example of a custom validation to check if an age is within a certain range:
+
+1. **Create the Custom Annotation:**
+
+```java
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({ ElementType.FIELD })
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = AgeValidator.class)
+public @interface ValidAge {
+    String message() default "Invalid age";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}
+```
+
+2. **Implement the Validator Logic:**
+
+```java
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
+public class AgeValidator implements ConstraintValidator<ValidAge, Integer> {
+
+    @Override
+    public boolean isValid(Integer value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return false; // Age must not be null
+        }
+        return value >= 18 && value <= 100; // Valid if age is between 18 and 100
+    }
+}
+```
+
+3. **Apply the Custom Validation:**
+
+```java
+public class UserDTO {
+
+    @ValidAge(message = "Age must be between 18 and 100")
+    private Integer age;
+
+    // Other fields, getters, setters
+}
+```
+
+Now, if the age is outside of the 18-100 range, the custom error message will be displayed.
+
+### Conclusion
+
+- **Annotations** like `@NotNull`, `@Size`, and `@Email` are used to validate input fields in DTOs or entities.
+- **Global Exception Handling** can be used to return a consistent error response format.
+- **Custom Validators** can be created when built-in validations don’t fit your requirements.
+
+By combining these techniques, you can ensure that input data is always validated, improving both security and data integrity in your Spring Boot application.
+
+

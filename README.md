@@ -229,6 +229,118 @@ Spring Boot provides default configurations for all Hibernate dependencies.
 5. Use `load()` when sure the object exists.
 
 
+
+Q. Difference between Spring Boot and Spring MVC?
+Spring Boot and Spring MVC are part of the larger Spring ecosystem, but they serve different purposes and are used for different scenarios. Here’s a breakdown of the key differences between Spring Boot and Spring MVC:
+
+### 1. **Purpose**
+
+- **Spring MVC**:
+  - Spring MVC is a part of the Spring Framework that focuses on building web applications following the Model-View-Controller (MVC) design pattern. It provides a framework for creating loosely coupled, flexible, and testable web applications.
+  - You need to manually configure various aspects such as view resolvers, data sources, transaction management, and more.
+
+- **Spring Boot**:
+  - Spring Boot is an opinionated framework that simplifies the setup and development of Spring-based applications. It comes with built-in configurations and embedded servers, making it easier to create standalone Spring applications with minimal setup.
+  - Spring Boot includes Spring MVC and provides various defaults, making it easier to configure and run Spring MVC-based web applications.
+
+### 2. **Configuration**
+
+- **Spring MVC**:
+  - Requires manual configuration of beans in XML files or through Java-based configurations using `@Configuration` classes.
+  - Developers need to explicitly configure things like view resolvers, data sources, and security.
+
+- **Spring Boot**:
+  - Provides **auto-configuration** that automatically sets up the environment based on the dependencies you have included. For example, if `spring-boot-starter-web` is in your classpath, it will automatically configure Spring MVC.
+  - It also provides **convention over configuration**, meaning it follows sensible defaults, reducing the amount of manual configuration required.
+
+### 3. **Dependency Management**
+
+- **Spring MVC**:
+  - You need to manually manage dependencies in your project. For example, you would need to specify dependencies for Spring Core, Spring MVC, logging, and other libraries.
+
+- **Spring Boot**:
+  - Spring Boot offers **starters**, which are pre-configured dependency bundles for specific functionalities. For example, `spring-boot-starter-web` includes all the necessary dependencies to build a web application, including Spring MVC, embedded Tomcat, logging, and Jackson for JSON handling.
+  - It simplifies dependency management by eliminating the need to specify individual versions of libraries.
+
+### 4. **Embedded Server**
+
+- **Spring MVC**:
+  - By default, Spring MVC doesn’t come with an embedded server. You typically deploy your application in an external servlet container like **Tomcat**, **Jetty**, or **WildFly**.
+
+- **Spring Boot**:
+  - Spring Boot provides an **embedded server** (like Tomcat or Jetty), allowing you to run your application as a standalone JAR with an embedded server. This makes deployment easier as you don't need an external application server.
+  - You can package and run the application using `java -jar` to start the embedded server.
+
+### 5. **Setup Complexity**
+
+- **Spring MVC**:
+  - Typically involves more setup and configuration. You need to define things like view resolvers, handler mappings, data sources, etc.
+  - There’s more flexibility since you can configure things in a granular way, but this requires more boilerplate code.
+
+- **Spring Boot**:
+  - Minimal setup is required due to the auto-configuration feature. You can get a simple Spring Boot web application up and running quickly with just a few lines of code.
+  - However, if needed, you can still override the default configuration for custom setups.
+
+### 6. **Development Speed**
+
+- **Spring MVC**:
+  - Requires more manual configuration, which may slow down development if you need to configure many aspects of the application.
+
+- **Spring Boot**:
+  - Spring Boot accelerates development with its auto-configuration, embedded servers, and dependency starters. This is especially beneficial for rapid prototyping and microservice-based architectures.
+
+### 7. **Testing**
+
+- **Spring MVC**:
+  - You need to set up specific configurations for testing manually.
+
+- **Spring Boot**:
+  - Spring Boot simplifies testing by providing a wide array of pre-configured testing utilities, such as `@SpringBootTest`, which sets up the entire application context for integration testing.
+  - It also offers various test slices (`@WebMvcTest`, `@DataJpaTest`) that allow you to test specific layers without loading the entire context.
+
+### 8. **Command-Line Interface (CLI)**
+
+- **Spring MVC**:
+  - Spring MVC doesn’t provide a CLI tool for quickly creating and running applications.
+
+- **Spring Boot**:
+  - Spring Boot offers a **Command-Line Interface (CLI)** tool that allows you to run Groovy scripts for quickly prototyping Spring applications. This makes it easy to test and run Spring-based code without needing a full IDE setup.
+
+### 9. **Microservices**
+
+- **Spring MVC**:
+  - While you can use Spring MVC to create microservices, the configuration and setup are more manual and time-consuming compared to Spring Boot.
+
+- **Spring Boot**:
+  - Spring Boot is designed with microservices in mind. It simplifies the creation of standalone, production-ready microservices, with features like embedded servers, externalized configuration, and support for distributed systems through Spring Cloud.
+
+### 10. **Actuator and Metrics**
+
+- **Spring MVC**:
+  - You would need to manually configure monitoring and metrics if you want them in a Spring MVC application.
+
+- **Spring Boot**:
+  - Spring Boot includes **Actuator**, which provides ready-made endpoints for monitoring and managing the application. You can track metrics, health, and other operational data out of the box.
+
+### Summary of Differences:
+
+| Feature                       | Spring MVC                                      | Spring Boot                                        |
+|-------------------------------|-------------------------------------------------|----------------------------------------------------|
+| **Purpose**                    | Web framework for building MVC-based apps       | Framework for building Spring apps with minimal setup |
+| **Configuration**              | Manual configuration (XML or Java-based)        | Auto-configuration with sensible defaults          |
+| **Dependency Management**      | Manual dependency management                    | Pre-configured starters for quick setup            |
+| **Embedded Server**            | Requires external servlet container             | Provides embedded servers like Tomcat, Jetty       |
+| **Setup Complexity**           | More manual setup required                      | Minimal setup, faster to get started               |
+| **Development Speed**          | Slower due to manual configuration              | Faster due to auto-configuration                   |
+| **Testing**                    | More manual setup for testing                   | Simplified testing with pre-configured utilities   |
+| **Microservices Support**      | Possible but more complex to configure          | Designed with microservices in mind                |
+| **Monitoring & Metrics**       | Manual configuration                           | Actuator provides built-in monitoring endpoints    |
+| **CLI Support**                | No CLI tool                                    | CLI available for quick application prototyping    |
+
+### Conclusion
+
+- **Spring MVC** is part of the larger Spring Framework and is mainly focused on creating web applications with a traditional MVC architecture. It offers flexibility but requires more manual setup.
+- **Spring Boot** is an opinionated framework that simplifies Spring development by providing auto-configuration, embedded servers, and dependency starters. It’s ideal for rapid development, microservices, and standalone applications.
 ### 1. **Spring Boot Core Annotations**:
 
 ### @SpringBootApplication
