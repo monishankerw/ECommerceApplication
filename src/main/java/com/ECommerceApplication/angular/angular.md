@@ -2306,3 +2306,107 @@ Visit `http://localhost:4200` in your browser. You should see the book managemen
 This complete example gives you a solid foundation for a CRUD application in Angular. You can expand it further by adding features like form validation, persistent storage (e.g., using local storage or a backend API), and styling. If you have any questions or need further modifications, feel free to ask!
 
 
+Here's the complete HTML for each component in the Angular CRUD application to manage books. This includes the structure for the **Book List**, **Book Create**, and **Book Edit** components.
+
+### 1. **Book List Component HTML (`book-list.component.html`)**
+
+This file displays the list of books with options to create, edit, and delete.
+
+```html
+<!-- src/app/book-list/book-list.component.html -->
+<h2>Book List</h2>
+<button (click)="addBook()">Add Book</button>
+<ul>
+  <li *ngFor="let book of books">
+    {{ book.title }} by {{ book.author }}
+    <button (click)="editBook(book.id)">Edit</button>
+    <button (click)="deleteBook(book.id)">Delete</button>
+  </li>
+</ul>
+```
+
+### 2. **Book Create Component HTML (`book-create.component.html`)**
+
+This file provides a form to create a new book.
+
+```html
+<!-- src/app/book-create/book-create.component.html -->
+<h2>Add Book</h2>
+<form (ngSubmit)="createBook()">
+  <input [(ngModel)]="book.title" name="title" placeholder="Title" required />
+  <input [(ngModel)]="book.author" name="author" placeholder="Author" required />
+  <button type="submit">Add</button>
+</form>
+```
+
+### 3. **Book Edit Component HTML (`book-edit.component.html`)**
+
+This file provides a form to edit an existing book.
+
+```html
+<!-- src/app/book-edit/book-edit.component.html -->
+<h2>Edit Book</h2>
+<form (ngSubmit)="updateBook()">
+  <input [(ngModel)]="book.title" name="title" placeholder="Title" required />
+  <input [(ngModel)]="book.author" name="author" placeholder="Author" required />
+  <button type="submit">Update</button>
+</form>
+```
+
+### 4. **App Component HTML (`app.component.html`)**
+
+This file serves as the main layout for your application, where the routing will be rendered.
+
+```html
+<!-- src/app/app.component.html -->
+<nav>
+  <a routerLink="/books">Book List</a>
+  <a routerLink="/books/create">Add Book</a>
+</nav>
+<router-outlet></router-outlet>
+```
+
+### Summary of HTML Components
+
+- **Book List**: Displays all books with edit and delete buttons.
+- **Book Create**: Provides a form to add a new book.
+- **Book Edit**: Provides a form to edit an existing book.
+- **App Component**: Contains navigation links and a router outlet to load the corresponding component based on the route.
+
+### Styling (Optional)
+
+You can add some basic styling in your global styles file (`styles.css` or `styles.scss`) to improve the appearance:
+
+```css
+/* src/styles.css */
+nav {
+  margin: 20px;
+}
+
+nav a {
+  margin-right: 10px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+  margin: 20px;
+}
+
+input {
+  margin-bottom: 10px;
+}
+```
+
+### Running the Application
+
+To run the application, execute:
+
+```bash
+ng serve
+```
+
+Now you can access your book management application at `http://localhost:4200` and perform CRUD operations on the books. Let me know if you need any further assistance or modifications!
+
+
