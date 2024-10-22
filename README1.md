@@ -4248,7 +4248,274 @@ public class TaskManagementController {
 
 This comprehensive list of annotations and steps to set up OpenAPI documentation using Swagger 3 will help you in interviews and project setups.
 
+Q. How can you send email with spring boot
 
+To send an email in a Spring Boot application, you can use the `Spring Boot Starter Mail` dependency, which simplifies integrating JavaMail into your project. Here's a step-by-step guide:
+
+### Step 1: Add Dependency
+Include the following dependency in your `pom.xml` file if you're using Maven:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>
+```
+
+If you're using Gradle, include this in your `build.gradle`:
+
+```gradle
+implementation 'org.springframework.boot:spring-boot-starter-mail'
+```
+
+### Step 2: Configure Email Properties
+Configure the email properties in `application.properties` or `application.yml`:
+
+#### For `application.properties`:
+```properties
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+```
+
+#### For `application.yml`:
+```yaml
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: your-email@gmail.com
+    password: your-password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+```
+
+### Step 3: Create the Email Service
+Now, create a service to send the email. You can use `JavaMailSender` provided by Spring Boot.
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+
+@Service
+public class EmailService {
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    public void sendSimpleEmail(String to, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
+        message.setFrom("your-email@gmail.com");
+
+        mailSender.send(message);
+    }
+}
+```
+
+### Step 4: Call the Email Service
+You can now inject `EmailService` into any controller or service to send an email.
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class EmailController {
+
+    @Autowired
+    private EmailService emailService;
+
+    @GetMapping("/send-email")
+    public String sendEmail() {
+        emailService.sendSimpleEmail("recipient@example.com", "Test Subject", "Test Email Body");
+        return "Email sent successfully!";
+    }
+}
+```
+
+### Optional: Sending HTML Emails
+If you want to send an HTML email, you can use `MimeMessage` instead of `SimpleMailMessage`:
+
+```java
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
+public void sendHtmlEmail(String to, String subject, String htmlBody) throws MessagingException {
+    MimeMessage message = mailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message, true);
+    
+    helper.setTo(to);
+    helper.setSubject(subject);
+    helper.setText(htmlBody, true);
+    helper.setFrom("your-email@gmail.com");
+
+    mailSender.send(message);
+}
+```
+
+### Step 5: Enable Less Secure Apps in Gmail (For Testing Purposes)
+If you're using Gmail as your SMTP server, you'll need to enable "Less Secure Apps" in your Google account settings. Be sure to turn this off in production, or use a more secure service like OAuth2.
+
+That's it! You should now be able to send emails from your Spring Boot application.
+
+Q. file upload in sprin boot
+
+To handle file uploads in a Spring Boot application, you can use Spring's `MultipartFile` interface. Here's a step-by-step guide to implement file upload functionality.
+
+### Step 1: Add Dependencies
+In your `pom.xml`, make sure you have the following dependency (it is included with `spring-boot-starter-web`):
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+### Step 2: Configure File Upload Settings
+In your `application.properties` or `application.yml`, you can configure file upload properties (optional).
+
+#### For `application.properties`:
+```properties
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+```
+
+#### For `application.yml`:
+```yaml
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+```
+
+### Step 3: Create a File Upload Controller
+
+Create a REST controller to handle the file upload request.
+
+```java
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+
+import java.io.File;
+import java.io.IOException;
+
+@RestController
+@RequestMapping("/api/files")
+public class FileUploadController {
+
+    private final String UPLOAD_DIR = "uploads/";
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return new ResponseEntity<>("Please select a file to upload.", HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Save the file locally
+            String filePath = UPLOAD_DIR + file.getOriginalFilename();
+            File dest = new File(filePath);
+            file.transferTo(dest);
+
+            return new ResponseEntity<>("File uploaded successfully: " + file.getOriginalFilename(), HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>("File upload failed: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+}
+```
+
+### Step 4: Create the Upload Directory
+Ensure that the directory where you want to store the uploaded files exists. You can either manually create the directory or add code to create it dynamically when the application starts.
+
+For example, you could create it dynamically like this:
+
+```java
+import javax.annotation.PostConstruct;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+@PostConstruct
+public void init() {
+    Path uploadPath = Paths.get(UPLOAD_DIR);
+    if (!Files.exists(uploadPath)) {
+        try {
+            Files.createDirectories(uploadPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Step 5: Test the File Upload
+You can test the file upload using tools like Postman or cURL.
+
+#### Example with Postman:
+1. Open Postman.
+2. Select `POST` method.
+3. Enter the URL: `http://localhost:8080/api/files/upload`
+4. In the `Body` tab, select `form-data`.
+5. Add a key `file` and set it to `File`.
+6. Choose a file to upload.
+7. Send the request.
+
+#### Example cURL Command:
+```bash
+curl -F "file=@/path/to/your/file.txt" http://localhost:8080/api/files/upload
+```
+
+### Step 6: Optional – Handle Multiple File Uploads
+If you want to handle multiple file uploads, you can modify the method to accept an array of `MultipartFile`:
+
+```java
+@PostMapping("/upload-multiple")
+public ResponseEntity<String> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
+    StringBuilder message = new StringBuilder();
+
+    for (MultipartFile file : files) {
+        if (!file.isEmpty()) {
+            try {
+                String filePath = UPLOAD_DIR + file.getOriginalFilename();
+                File dest = new File(filePath);
+                file.transferTo(dest);
+                message.append("Uploaded: ").append(file.getOriginalFilename()).append("\n");
+            } catch (IOException e) {
+                return new ResponseEntity<>("File upload failed: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    return new ResponseEntity<>(message.toString(), HttpStatus.OK);
+}
+```
+
+This code allows you to upload multiple files in a single request.
+
+---
+
+That's it! You've implemented file upload functionality in Spring Boot. You can now handle both single and multiple file uploads.
 
 
 
