@@ -1,68 +1,39 @@
-How to create multiple Spring boot microservices and how to use RestTemplate class to make Synchronous communication between multiple microservices.
 
-    There are two styles of Microservices Communications:
+```markdown
+# Microservices Communication
 
-    Synchronous Communication
-    Asynchronous Communication
-    Synchronous Communication
+## 1. Synchronous Communication
 
-    In the case of Synchronous Communication,
-    the client sends a request and waits for a response from the service.
-    The important point here is that the protocol (HTTP/HTTPS) is synchronous and
-    the client code can only continue its task when it receives the HTTP server response.
+In **Synchronous Communication**, the client sends a request and waits for a response from the service. The key point here is that the protocol used, such as **HTTP/HTTPS**, is synchronous, meaning the client can only continue executing its task when it receives a response from the server.
 
-    For example,
-    Microservice1 acts as a client that sends a request and waits for a response from Microservice2.
+### Example:
+- **Microservice1** (Client) sends a request to **Microservice2** (Server) and waits for the response before proceeding.
+  
+### Libraries for Synchronous Communication:
+- **RestTemplate**
+- **WebClient**
+- **Spring Cloud Open Feign**
 
-    We can use RestTemplate or WebClient or Spring Cloud Open Feign library to make a Synchronous Communication multiple microservices.
+These libraries are commonly used for enabling synchronous communication between microservices.
 
-    Asynchronous Communication
-    In the case of Asynchronous Communication, The client sends a request and does not wait for a response from the service. The client will continue executing its task - It doesn’t wait for the response from the service.
+---
 
-    For example, Microservice1 acts as a client that sends a request and doesn't wait for a response from Microservice2.
+## 2. Asynchronous Communication
 
+In **Asynchronous Communication**, the client sends a request but does **not wait** for a response. It continues executing its tasks without blocking for a response from the service.
 
-    We can use Message brokers such as RabbitMQ and Apache Kafka to make Asynchronous Communication between multiple microservices.
-    What we will Build?
-    Well, we will create two microservices such as department-service and user-service and we will make a REST API call from user-service to department-service to fetch a particular user department.
-    Spring Boot Microservices Communication Example using RestTemplate
+### Example:
+- **Microservice1** (Client) sends a request to **Microservice2** but continues its execution without waiting for a response.
 
-    We will create a separate MySQL database for each microservice.
+### Tools for Asynchronous Communication:
+- **Message Brokers** such as:
+  - **RabbitMQ**
+  - **Apache Kafka**
 
-    We will create and set up two Spring boot projects as two microservices in IntelliJ IDEA.
+These tools enable asynchronous communication between microservices by allowing messages to be sent without waiting for immediate responses.
 
+---
 
-    UserService - Configure RestTemplate as Spring Bean
-@SpringBootApplication
-public class UserServiceApplication {
+Both styles of communication are essential depending on the use case. Synchronous communication is more appropriate when an immediate response is needed, while asynchronous communication is useful when tasks can be processed in the background.
+```
 
-      public static void main(String[] args) {
-          SpringApplication.run(UserServiceApplication.class, args);
-      }
-
-      @Bean
-      public RestTemplate restTemplate(){
-          return new RestTemplate();
-      }
-}
-
-    @Override
-        public ResponseDto getUser(Long userId) {
-
-            ResponseDto responseDto = new ResponseDto();
-            User user = userRepository.findById(userId).get();
-            UserDto userDto = mapToUser(user);
-
-            ResponseEntity<DepartmentDto> responseEntity = restTemplate
-                    .getForEntity("http://localhost:8080/api/departments/" + user.getDepartmentId(),
-                    DepartmentDto.class);
-
-            DepartmentDto departmentDto = responseEntity.getBody();
-
-            System.out.println(responseEntity.getStatusCode());
-
-            responseDto.setUser(userDto);
-            responseDto.setDepartment(departmentDto);
-
-            return responseDto;
-        }
