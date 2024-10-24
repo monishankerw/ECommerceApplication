@@ -1,5 +1,5 @@
 Here's a breakdown of how to use **Spring Cloud Open Feign** for synchronous communication between multiple microservices, along with explanations of the steps involved:
-
+ 
 ### 1. **Add Spring Cloud OpenFeign Dependency**
 In your `pom.xml` file, you need to add the dependency for Spring Cloud Open Feign, which allows for easy REST API communication between microservices.
 
